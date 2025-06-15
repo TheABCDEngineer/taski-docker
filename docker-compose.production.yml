@@ -1,0 +1,37 @@
+version: '3'
+
+volumes:
+  pg_data:
+  static:
+
+services:
+
+  db:
+    image: postgres:13.10
+    env_file: .env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+  
+  backend:
+    image: theabcdengineer/taski_backend_slim
+    env_file: .env
+    volumes:
+      - static:/backend_static
+    depends_on:
+      - db
+  
+  frontend:
+    env_file: .env
+    image: theabcdengineer/taski_frontend
+    command: cp -r /app/build/. /frontend_static/
+    volumes:
+      - static:/frontend_static
+  
+  gateway:
+    image: theabcdengineer/taski_gateway
+    volumes:
+      - static:/staticfiles/
+    depends_on:
+      - backend
+    ports:
+      - 8000:80
